@@ -4,11 +4,13 @@
   const hint = $("#hint"), stats = $("#stats"), links = $("#links"), stage = $("#stage");
   const pages = [...document.querySelectorAll(".page")];
   const BLOCKS = 16;
+  const MAX_RENDER = 120; // per page — keeps the DOM light on the full 7.6k-row train set
   let busy = false;
+  let pending = null; // { results, name } — rendered once the fly-out animation lands
 
   /* ---------- input ---------- */
   $("#browse").addEventListener("click", () => input.click());
-  $("#sample").addEventListener("click", () => run(window.SAMPLE_CSV, "sample.csv"));
+  $("#sample").addEventListener("click", () => run(window.TRAIN_CSV, "train.csv"));
   $("#reset").addEventListener("click", reset);
   file.addEventListener("click", () => { if (!document.body.classList.contains("results")) input.click(); });
   file.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && !document.body.classList.contains("results")) { e.preventDefault(); input.click(); } });
@@ -83,8 +85,7 @@
     busy = true;
 
     const results = tweets.map((t) => Object.assign(t, PseudoModel.predict(t.text)));
-    renderPages(results);
-    renderStats(results, name);
+    pending = { results, name };
 
     // 1. processing: shake + pixel progress bar
     file.classList.add("busy");
@@ -132,6 +133,7 @@
       });
       setTimeout(() => {
         pages.forEach((p) => { p.classList.remove("flying"); p.style.transform = ""; p.style.opacity = ""; });
+        if (pending) { renderPages(pending.results); renderStats(pending.results, pending.name); pending = null; }
         document.body.classList.add("landed");
         drawLinks();
         links.classList.add("show");
@@ -192,6 +194,8 @@
       if (pred !== null) meta.push(pred === t.target ? `<span class="tag ok">✓ label ${t.target}</span>` : `<span class="tag bad">✗ label ${t.target}</span>`);
       else meta.push(`<span class="tag">label ${t.target}</span>`);
     }
+    const q = encodeURIComponent(t.text.replace(/https?:\/\/\S+/g, "").trim());
+    meta.push(`<a class="tag link" href="https://twitter.com/search?q=${q}" target="_blank" rel="noopener" title="Dataset IDs aren't real tweet IDs — this searches X for the text instead">Search on X ↗</a>`);
     return `<li><p class="tweet-text">${text}</p><div class="tweet-meta">${meta.join("")}</div></li>`;
   }
 
@@ -204,7 +208,11 @@
     pages.forEach((p) => {
       const g = groups[p.dataset.cat];
       $(".count", p).textContent = g.length;
-      $(".tweets", p).innerHTML = g.length ? g.map(tweetHTML).join("") : `<li class="empty">Nothing here</li>`;
+      const shown = g.slice(0, MAX_RENDER);
+      const rest = g.length - shown.length;
+      const html = shown.length ? shown.map(tweetHTML).join("") : `<li class="empty">Nothing here</li>`;
+      const more = rest > 0 ? `<li class="more">+${rest} more not shown, sorted by confidence</li>` : "";
+      $(".tweets", p).innerHTML = html + more;
       $(".tweets", p).scrollTop = 0;
     });
   }

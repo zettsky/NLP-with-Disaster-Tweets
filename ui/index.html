@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <header class="topbar">
@@ -59,7 +59,7 @@
       <p class="hint" id="hint">Drop a <b>.csv</b> or <b>.txt</b> file on the folder</p>
       <div class="actions" id="actions">
         <button class="btn" id="browse">Browse file</button>
-        <button class="btn ghost" id="sample">Use sample tweets</button>
+        <button class="btn ghost" id="sample">Load train.csv · 7,613 tweets</button>
       </div>
       <div class="stats" id="stats"></div>
       <input type="file" id="input" accept=".csv,.txt,text/csv,text/plain" hidden />
@@ -112,15 +112,54 @@
     <h3>How it works</h3>
     <ol>
       <li><b>Upload</b> a Kaggle-style CSV (<code>id, keyword, location, text[, target]</code>) or a TXT file with one tweet per line.</li>
-      <li><b>Tokenise</b> each tweet. Each word has a weight: positive pushes toward “disaster”, negative toward “not”.</li>
-      <li><b>Score</b> = bias + Σ weights → sigmoid → probability <code>p</code>.</li>
-      <li><b>Sort</b> into three pages by <code>p</code>. Underlined words pushed toward disaster; struck words pushed away.</li>
+      <li><b>Tokenise</b> each tweet into words. Each known word carries a fixed weight: positive pushes the score toward “disaster”, negative pushes it toward “not”.</li>
+      <li><b>Score</b> the tweet: add up <code>bias + Σ weights</code>, then squash it through a sigmoid so it reads as a probability <code>p</code> between 0 and 1.</li>
+      <li><b>Sort</b> into three pages by <code>p</code>: real disaster (≥ 0.65), uncertain (0.35–0.65), not a disaster (≤ 0.35). In each tweet, underlined words pushed the score up; struck-through words pulled it down.</li>
     </ol>
-    <p class="note">This is a placeholder model. Swap <code>model.js → predict()</code> for the real one later. The UI stays the same.</p>
+
+    <h4>The formula</h4>
+    <p class="formula">p(disaster) = 1 / (1 + e^-(bias + Σ word_weight))</p>
+    <p>Example — <i>“Wildfire near the highway forces evacuation”</i>: <code>wildfire</code> +2.8, <code>evacuation</code> +2.4, bias −0.5 → score 4.7 → <b>p ≈ 0.99</b>, sorted into <i>Real disaster</i>.</p>
+
+    <h4>Reading the cards</h4>
+    <div class="legend">
+      <span><span class="pos" style="text-decoration:underline">underlined</span> = pushed toward disaster</span>
+      <span><span class="neg" style="text-decoration:line-through">struck</span> = pushed toward not</span>
+      <span>■■■■□□□□□□ = the probability meter, 1 block per 10%</span>
+    </div>
+
+    <h4>A few of the model's weights</h4>
+    <div class="weight-grid">
+      <div><b>wildfire / tsunami</b>+2.8</div>
+      <div><b>evacuated / evacuation</b>+2.4–2.6</div>
+      <div><b>derailment / derailed</b>+2.6</div>
+      <div><b>casualties</b>+2.4</div>
+      <div><b>lol / lmao</b>−2.0</div>
+      <div><b>mixtape</b>−2.0</div>
+      <div><b>cute</b>−1.6</div>
+      <div><b>birthday / pizza</b>−1.6</div>
+    </div>
+    <p class="note">Unseen words score 0. A small per-tweet jitter keeps otherwise neutral tweets from all landing on exactly 50%, so the “uncertain” pile isn't empty.</p>
+
+    <h4>The dataset</h4>
+    <p>“Load train.csv” runs the labelled training set from Kaggle's <a href="https://www.kaggle.com/competitions/nlp-getting-started" target="_blank" rel="noopener">Natural Language Processing with Disaster Tweets</a> competition through this pseudo model, so you can see the pipeline work on real tweets before any real model exists.</p>
+    <div class="stat-row">
+      <span>7,613 <b>labelled tweets</b></span>
+      <span>3,271 <b>real disaster (43%)</b></span>
+      <span>4,342 <b>not a disaster (57%)</b></span>
+      <span>7,552 <b>tagged with a keyword</b></span>
+      <span>5,079 <b>tagged with a location</b></span>
+    </div>
+    <p class="note">The competition itself is scored on <b>F1</b>, not raw accuracy — this UI shows accuracy on the tweets the pseudo model is confident about (outside the uncertain band) since it has no real precision/recall to speak of yet.</p>
+
+    <h4>About the “Search on X” links</h4>
+    <p class="note">The dataset's <code>id</code> column is just a row number, not a real tweet ID, so there's no reliable link back to the original tweet. Each card instead links to an X search for its own text, as the closest honest substitute.</p>
+
+    <p class="note">This is a placeholder model, built to get the interface right before the real one exists. Swap <code>model.js → predict()</code> for a trained classifier later — the UI, animation and dataset loading all stay the same.</p>
   </section>
 
-  <script src="sample.js"></script>
-  <script src="model.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="train-data.js"></script>
+  <script src="model.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

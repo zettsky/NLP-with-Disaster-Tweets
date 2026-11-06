@@ -14,14 +14,16 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+html { font-size: 100%; }
 body {
   margin: 0;
   background: var(--white);
   color: var(--char);
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
   letter-spacing: -0.01em;
+  min-height: 100vh;
   /* faint pixel grid */
   background-image:
     linear-gradient(var(--cloud) 1px, transparent 1px),
@@ -35,7 +37,8 @@ button { font: inherit; color: inherit; }
 /* ---------- top bar ---------- */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 20px 32px; max-width: 1240px; margin: 0 auto;
+  gap: 16px; padding: 24px clamp(20px, 4vw, 48px);
+  max-width: clamp(960px, 94vw, 1560px); margin: 0 auto;
 }
 .wordmark { font-family: var(--pixel-font); font-weight: 700; font-size: 18px; color: var(--ink); }
 .wordmark span { color: var(--fog); }
@@ -51,7 +54,10 @@ button { font: inherit; color: inherit; }
 .pill-item.active::before { content: ""; width: 6px; height: 6px; background: var(--char); }
 
 /* ---------- stage ---------- */
-.stage { position: relative; max-width: 1240px; margin: 0 auto; padding: 24px 32px 64px; }
+.stage {
+  position: relative; max-width: clamp(960px, 94vw, 1560px); margin: 0 auto;
+  padding: 24px clamp(20px, 4vw, 48px) 64px;
+}
 .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 32px; position: relative; z-index: 2; }
 .eyebrow {
   font-family: var(--pixel-font); font-size: 10px; text-transform: uppercase; color: var(--fog);
@@ -60,7 +66,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- pixel folder ---------- */
 .file {
-  --w: 240px;
+  --w: clamp(220px, 19vw, 300px);
   position: relative; width: var(--w); height: calc(var(--w) * 0.8);
   cursor: pointer; perspective: 600px; outline: none;
   transition: transform .35s steps(5), width .5s steps(6);
@@ -132,7 +138,7 @@ button { font: inherit; color: inherit; }
 .stats span.muted { border-color: var(--mist); color: var(--fog); }
 
 /* results state */
-body.results .file { --w: 150px; cursor: default; }
+body.results .file { --w: clamp(130px, 11vw, 180px); cursor: default; }
 body.results .hint, body.results .actions { display: none; }
 body.results .eyebrow { margin-bottom: 16px; order: -2; }
 body.results .stats { display: flex; order: -1; margin: 0 0 36px; }
@@ -150,7 +156,7 @@ body.results .progress { display: none; }
 
 /* ---------- pages ---------- */
 .pages {
-  display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px;
+  display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 2.5vw, 36px);
   margin-top: 96px; position: relative; z-index: 2;
 }
 body.results .pages { display: grid; }
@@ -159,7 +165,8 @@ body.results .pages { display: grid; }
   position: relative; background: var(--white);
   border: 3px solid var(--char);
   box-shadow: 6px 6px 0 var(--bone);
-  padding: 18px 18px 8px; display: flex; flex-direction: column; min-height: 0; height: 560px;
+  padding: 18px 18px 8px; display: flex; flex-direction: column; min-height: 0;
+  height: clamp(480px, 64vh, 680px);
   clip-path: polygon(0 0, calc(100% - var(--corner)) 0, 100% var(--corner), 100% 100%, 0 100%);
   transform-origin: 50% 0;
 }
@@ -196,18 +203,48 @@ body.results .pages { display: grid; }
 .tag { padding: 0 4px; border: 1px solid var(--mist); }
 .tag.ok { border-color: var(--char); color: var(--char); }
 .tag.bad { background: var(--char); color: var(--white); border-color: var(--char); }
+.tag.link { text-decoration: none; cursor: pointer; }
+.tag.link:hover { background: var(--char); color: var(--white); }
 .empty { color: var(--fog); font-family: var(--pixel-font); font-size: 11px; text-transform: uppercase; padding: 24px 0; text-align: center; border: 0 !important; }
+.more {
+  color: var(--fog); font-family: var(--pixel-font); font-size: 10px; text-transform: uppercase;
+  text-align: center; padding: 14px 0 6px; border: 0 !important;
+}
 
 .reset-row { display: none; justify-content: center; margin-top: 40px; }
 body.results.landed .reset-row { display: flex; }
 
 /* ---------- how it works ---------- */
-.how { max-width: 720px; margin: 0 auto 80px; padding: 24px 32px; }
+.how { max-width: clamp(640px, 70vw, 880px); margin: 80px auto; padding: 24px clamp(20px, 4vw, 48px); }
 .how h3 { font-family: var(--pixel-font); font-size: 14px; text-transform: uppercase; border-bottom: 3px solid var(--char); padding-bottom: 8px; margin: 0 0 12px; }
+.how h4 { font-family: var(--pixel-font); font-size: 11px; text-transform: uppercase; color: var(--fog); margin: 28px 0 10px; }
 .how ol { padding-left: 20px; margin: 0 0 12px; }
 .how li { margin-bottom: 6px; }
 .how code { background: var(--cloud); padding: 1px 4px; }
 .how .note { color: var(--fog); font-size: 12px; }
+.how p { margin: 0 0 12px; }
+.how a { color: var(--char); }
+
+.formula {
+  font-family: var(--pixel-font); font-size: 12px; background: var(--cloud);
+  border: 2px dashed var(--mist); padding: 14px 16px; margin: 0 0 16px;
+  overflow-x: auto; white-space: nowrap;
+}
+
+.legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 0 0 16px; font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .pos, .legend .neg { padding: 1px 4px; }
+
+.weight-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0; border: 2px solid var(--char); margin: 0 0 16px; font-size: 11px;
+}
+.weight-grid > div { padding: 8px 10px; border-right: 1px solid var(--mist); border-bottom: 1px solid var(--mist); }
+.weight-grid b { font-family: var(--pixel-font); display: block; margin-bottom: 4px; }
+
+.stat-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.stat-row span { font-family: var(--pixel-font); font-size: 10px; text-transform: uppercase; padding: 6px 10px; border: 2px solid var(--char); background: var(--white); }
+.stat-row span b { color: var(--fog); font-weight: 400; margin-left: 4px; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 860px) {
