@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Disaster Tweet Sorter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=4" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wordmark">disaster<span>/</span>tweets</div>
+    <nav class="pill">
+      <span class="pill-item active">Sort</span>
+      <a class="pill-item" href="#how">How it works</a>
+      <a class="pill-item" href="https://www.kaggle.com/competitions/nlp-getting-started" target="_blank" rel="noopener">Kaggle</a>
+    </nav>
+  </header>
+
+  <main class="stage" id="stage">
+    <section class="hero" id="hero">
+      <p class="eyebrow" id="eyebrow">Pseudo model v0 · keyword weights</p>
+
+      <div class="file" id="file" role="button" tabindex="0" aria-label="Upload a CSV or TXT file of tweets">
+        <!-- back of folder -->
+        <svg class="file-back" viewBox="0 0 40 32" shape-rendering="crispEdges" aria-hidden="true">
+          <rect x="2" y="3" width="15" height="5" fill="#282828"/>
+          <rect x="3" y="4" width="13" height="4" fill="#cfcfcf"/>
+          <rect x="2" y="7" width="36" height="24" fill="#282828"/>
+          <rect x="3" y="8" width="34" height="22" fill="#cfcfcf"/>
+          <rect x="3" y="8" width="34" height="1" fill="#bdbdbd"/>
+        </svg>
+        <!-- papers inside -->
+        <div class="paper p1"><i></i><i></i><i></i></div>
+        <div class="paper p2"><i></i><i></i><i></i></div>
+        <div class="paper p3"><i></i><i></i><i></i></div>
+        <!-- front flap -->
+        <div class="flap-wrap">
+          <svg class="file-front" viewBox="0 0 40 32" shape-rendering="crispEdges" aria-hidden="true">
+            <rect x="1" y="12" width="38" height="19" fill="#282828"/>
+            <rect x="2" y="13" width="36" height="17" fill="#f2f2f2"/>
+            <rect x="2" y="13" width="36" height="1" fill="#ffffff"/>
+            <rect x="2" y="28" width="36" height="2" fill="#dedede"/>
+            <g class="up-arrow" fill="#282828">
+              <rect x="19" y="15" width="2" height="1"/>
+              <rect x="18" y="16" width="4" height="1"/>
+              <rect x="17" y="17" width="6" height="1"/>
+              <rect x="16" y="18" width="8" height="1"/>
+              <rect x="19" y="19" width="2" height="5"/>
+              <rect x="15" y="25" width="10" height="1"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <p class="hint" id="hint">Drop a <b>.csv</b> or <b>.txt</b> file on the folder</p>
+      <div class="actions" id="actions">
+        <button class="btn" id="browse">Browse file</button>
+        <button class="btn ghost" id="sample">Use sample tweets</button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <input type="file" id="input" accept=".csv,.txt,text/csv,text/plain" hidden />
+    </section>
+
+    <svg class="links" id="links" aria-hidden="true">
+      <defs>
+        <marker id="head" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+          <path d="M0 0 L6 3 L0 6 Z" fill="#282828" shape-rendering="crispEdges"/>
+        </marker>
+      </defs>
+    </svg>
+
+    <section class="pages" id="pages">
+      <article class="page" data-cat="disaster">
+        <header class="page-head">
+          <span class="dot solid"></span>
+          <h2>Real disaster</h2>
+          <span class="count">0</span>
+        </header>
+        <p class="page-sub">target = 1 · p ≥ 0.65</p>
+        <ul class="tweets"></ul>
+      </article>
+      <article class="page" data-cat="uncertain">
+        <header class="page-head">
+          <span class="dot half"></span>
+          <h2>Uncertain</h2>
+          <span class="count">0</span>
+        </header>
+        <p class="page-sub">0.35 &lt; p &lt; 0.65 · needs review</p>
+        <ul class="tweets"></ul>
+      </article>
+      <article class="page" data-cat="safe">
+        <header class="page-head">
+          <span class="dot hollow"></span>
+          <h2>Not a disaster</h2>
+          <span class="count">0</span>
+        </header>
+        <p class="page-sub">target = 0 · p ≤ 0.35</p>
+        <ul class="tweets"></ul>
+      </article>
+    </section>
+
+    <div class="reset-row" id="resetRow">
+      <button class="btn ghost" id="reset">↺ Sort another file</button>
+    </div>
+  </main>
+
+  <section class="how" id="how">
+    <h3>How it works</h3>
+    <ol>
+      <li><b>Upload</b> a Kaggle-style CSV (<code>id, keyword, location, text[, target]</code>) or a TXT file with one tweet per line.</li>
+      <li><b>Tokenise</b> each tweet. Each word has a weight: positive pushes toward “disaster”, negative toward “not”.</li>
+      <li><b>Score</b> = bias + Σ weights → sigmoid → probability <code>p</code>.</li>
+      <li><b>Sort</b> into three pages by <code>p</code>. Underlined words pushed toward disaster; struck words pushed away.</li>
+    </ol>
+    <p class="note">This is a placeholder model. Swap <code>model.js → predict()</code> for the real one later. The UI stays the same.</p>
+  </section>
+
+  <script src="sample.js"></script>
+  <script src="model.js?v=4"></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>
